@@ -6,6 +6,9 @@
 
 // @lc code=start
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 class Solution {
     /*
      * 注意这里不能用012表示他们的状态，怎么说呢
@@ -19,65 +22,57 @@ class Solution {
      * 
      * 结论：不是所有的都能用dfs解决的（haha，一个下午没干出来）
      */
+    /*
+     * 同时扩散：bfs
+     */
     public int orangesRotting(int[][] grid) {
-        //初始化时间
-        int[][] time=new int[grid.length][grid[0].length];
-        for(int i=0;i<grid.length;i++){
-            for(int j=0;j<grid[0].length;j++){
-                if(grid[i][j]==0)
-                    time[i][j]=-1;
-                
-                else
-                    time[i][j]=Integer.MAX_VALUE;
-            }
-        }
-        for(int i=0;i<grid.length;i++){
-            for(int j=0;j<grid[0].length;j++){
+        int row=grid.length;
+        int col=grid[0].length;
+        int fresh=0;
+        Queue<int[]> neworange=new LinkedList<>();
+        for(int i=0;i<row;i++)
+            for(int j=0;j<col;j++){
                 if(grid[i][j]==2)
-                    dfs(grid,time,i,j,0);
+                    neworange.add(new int[]{i,j});
+                else if(grid[i][j]==1)
+                    fresh++;
             }
-        }
-        print(grid);
-        print(time);
-        int max=0;
-        for(int i=0;i<grid.length;i++){
-            for(int j=0;j<grid[0].length;j++){
-                if(grid[i][j]==1)
-                    return -1;
-                max=Math.max(max,time[i][j]);
-            }
-        }
-        return max;
-    }
-    void dfs(int[][] grid,int[][] time,int r,int c,int currenttime){
-        if(!inArea(grid,r,c))
-            return;
-        if(grid[r][c]==0)
-            return;
-        if(grid[r][c]==2&&currenttime>=time[r][c])
-            return;
+        if(fresh==0)
+            return 0;
+        int minute=-1;
+        while(!neworange.isEmpty()){
+            int num=neworange.size();
+            minute++;
+            for(int i=0;i<num;i++){
+                int[] orange=neworange.poll();
+                int r=orange[0];
+                int c=orange[1];
 
-        grid[r][c]=2;
-        time[r][c]=currenttime;
-        print(time);
-        dfs(grid,time,r+1,c,currenttime+1);
-        dfs(grid,time,r-1,c,currenttime+1);
-        dfs(grid,time,r,c+1,currenttime+1);
-        dfs(grid,time,r,c-1,currenttime+1);
-    }
-    boolean inArea(int[][] grid,int r,int c){
-        if(r<0||r>=grid.length||c<0||c>=grid[0].length)
-            return false;
-        return true;
-    }
-    void print(int[][] grid){
-        for(int i=0;i<grid.length;i++){
-            for(int j=0;j<grid[0].length;j++){
-                System.out.print(grid[i][j]);
-                System.out.print(' ');
+                //开始增加
+                if(r-1>=0&&grid[r-1][c]==1){
+                    grid[r-1][c]=2;
+                    fresh--;
+                    neworange.add(new int[]{r-1,c});
+                }
+                if(r+1<row&&grid[r+1][c]==1){
+                    grid[r+1][c]=2;
+                    fresh--;
+                    neworange.add(new int[]{r+1,c});
+                }
+                if(c-1>=0&&grid[r][c-1]==1){
+                    grid[r][c-1]=2;
+                    fresh--;
+                    neworange.add(new int[]{r,c-1});
+                }
+                if(c+1<col&&grid[r][c+1]==1){
+                    grid[r][c+1]=2;
+                    fresh--;
+                    neworange.add(new int[]{r,c+1});
+                }
             }
-            System.out.println();
         }
+        
+        return fresh==0?minute:-1;
     }
 }
 // @lc code=end
