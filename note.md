@@ -607,9 +607,168 @@ int binarySearch(vector<int>& nums, int target) {
 
 ### 表现形式
 
-1. 带备忘录的递归解法，即「自顶向下」
+1. 带备忘录（memo）的递归解法，即「自顶向下」
 2. dp table的迭代解法，即「自底向上」
+
+### 题型
+
+1. 爬楼梯：最小组合问题，这里一定要注意记忆化，避免重复搜索
+
+2. 打家劫舍：如果取某一个元素，则无法同时取左右相邻元素
+
+   1. 若是环形问题（即第一个和最后一个也算相邻），则可以分成两种情况：不取第一个+不取最后一个，然后取两者最值
+
+3. 最大子数组和（53题），有两种做法：
+
+   1. 定义状态 f[i] 表示以 a[i] 结尾的最大子数组和，不和 i 左边拼起来就是 f[i]=a[i]，和 i 左边拼起来就是 f[i]=f[i−1]+a[i]，取最大值就得到了状态转移方程 f[i]=max(f[i−1],0)+a[i]，答案为 max(f)   **Kadane 算法**
+
+   2. **前缀和**的形式，如第121题，可以转化成：求当前天数以前股票最低价
+
+   3. 若是环形问题，即数组可以跨越最后一个元素回到第一个元素，如第918问题，同样可以考虑两种情况：跨越末尾数组+不跨越末尾数组
+
+      1. 不跨越整个数组：最基础的最大子数组和问题
+
+      2. 跨越整个数组：数组和-最小子数组和
+
+         > 解释：跨越末尾的子数组可以分成两段：左边的一段+右边的一段，不考虑开头和末尾的断开的话，就等价于整个数组总和-中间不选的部分（最小的连续子数组）
+
+      3. 通过以上分析可以得知，似乎不跨越末尾数组的和也可以通过*整个数组总和-中间不选的部分*得到，那么为什么不能只考虑这一种情况呢
+         A：当所有元素都是负数时，此时最小子数组就是这个数组本身，最后算出来的结果是0，但是题目要求必须得到至少一个元素，所以至少都得单独考虑这一种情况。
+         同时，仔细分析可知，为什么不跨越末尾数组的和!=整个数组总和-中间不选的部分，如果该不跨越末尾数组是处在整个数组中间，也就是说此时该数组和=整个数组总和-前后两个子数组和
 
 ## 常用技巧
 
 1. 环形数组：取模运算
+
+## 前缀树/单词查找树/字典树
+
+1. 应用场景：统计、保存大量的字符串，经常被搜索引擎系统用于文本词频统计
+2. 优点：利用字符串的公共前缀来减少查找时间，最大限度地减少无谓字符串的比较和存储空间
+3. 逻辑结构
+   1. 路径+节点
+   2. 路径：记载字符串中的字符   **经典的前缀树是以路径记录字符的**
+   3. 节点：记载经过的字符串以及结尾字符结尾个数（有几个字符串经过该节点(pass)，有几个字符串以该节点结尾(end)）
+   4. 根节点表示空字符串
+
+### 实现：建立TrieNode结构节点
+
+```cpp
+//只支持小写字母的
+class Trie{
+    struct TrieNode{
+        bool end;
+        TrieNode* tns[26];
+        TrieNode(){
+            end=false;
+            for(int i=0;i<26;i++)
+                tns[i]=NULL;
+        }
+    };
+    
+    TrieNode* root;
+    
+public:
+    Trie(){
+        root=new TrieNode();
+    }
+    
+    void insert(const string& s){
+        TrieNode* p=root;
+        for(char c:s){
+            int u=c-'a';
+            if(!p->tns[u]){
+                p->tns[i]=new TrieNode();
+            }
+            p=p->tns[u];
+        }
+        p->end=true;
+    }
+    
+    bool search(const string& s){
+        TrieNode* p=root;
+        for(char c:s){
+            int u=c-'a';
+            if(!p->tns[u])
+                return false;
+            p=p->tns[u];
+        }
+        return p->end;
+    }
+    
+    bool startWith(const string& s){
+        TrieNode* p=root;
+        for(char c:s){
+            int u=c-'a';
+            if(!p->tns[u])
+                return false;
+        }
+        return true;
+    }
+}
+```
+
+补充：
+
+Q：为什么这里的TrieNode用的是struct而不是class
+A：class也是可以嵌套class的，但是因为class默认private，如果不额外加public，该内部class以外的其他变量就不能访问该class内成员，使用class的话是**适合那种需要封装的类**；而struct默认public，**适合纯数据结构**，比较简单
+
+Q：`const string& prefix`
+A：
+
+1. &表示引用，如果不加的话就是值传递，函数回拷贝一份字符串，对原来的变量没有影响；加上&之后，函数会直接使用原来的字符串，不会产生拷贝，节省了内存和时间
+2. const表示这个引用只读，函数内部不能修改这个字符串
+3. `const string&`即指向只读字符串的引用，使用这些限制可以避免不小心修改输入参数，同时还能避免拷贝
+
+```cpp
+//通用型
+class Trie{
+    struct TrieNode{
+        bool end;	//是否有以该节点结尾的字符串
+        unordered_map<char,TrieNode*>next;	//某个字符所对应的后面的前缀树节点
+        TrieNode():end(false){}
+    };
+    
+    TrieNode* root;
+    
+public:
+    Trie(){
+        root=new TrieNode();
+    }
+    
+    void insert(const string& s){
+        TrieNode* p=root;
+        for(char c:s){
+            //不断循环，直至找到最后一个字符（如果没有该字符则添加节点）
+            if(!p->next.count(c)){
+                p->next[c]=new TrieNode();
+            }
+            p=p->next[c];
+        }
+        //插入一个字符串，此时p指向字符串最后一个字符
+        p->end=true;
+    }
+    
+    bool search(const string& s){
+        TrieNode* p=root;
+        for(char c:s){
+            if(!p->next.count(c))
+                return false;
+            p=p->next[c];
+        }
+        return p->end;
+    }
+    
+    //找这个前缀，其实就是相当于search，但是不同的是，此时最后返回的不需要是“该节点指向的是否有单词结尾”，而是前面这些前缀如果都有即可
+    bool startWith(const string& prefix){
+        TrieNode* p=root;
+        for(char c:prefix){
+            if(!p->next.count(c))
+                return false;
+            p=p->next[c];
+        }
+        return true;
+    }
+}
+```
+
+解释：使用unordered_map的内存占用比固定数组大，适合字符集很大或稀疏的情况
