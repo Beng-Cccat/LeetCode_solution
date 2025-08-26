@@ -7,6 +7,7 @@
 // @lc code=start
 class Solution {
 public:
+    //本质上就是打家劫舍（一个元素和其左右元素不能相邻）
     int deleteAndEarn(vector<int>& nums) {
         int maxNum=*max_element(nums.begin(),nums.end());
         vector<int> sum(maxNum+1,0);
