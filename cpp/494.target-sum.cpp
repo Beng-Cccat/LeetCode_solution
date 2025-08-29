@@ -7,20 +7,29 @@
 // @lc code=start
 class Solution {
 public:
-//再想想
     int findTargetSumWays(vector<int>& nums, int target) {
         int len=nums.size();
-        vector<vector<int>> dp(len+1,vector<int>(target+1,0));
+        int sum=0;
+        for(auto i:nums)
+            sum+=i;
+        int add=(sum+target);
+        if(add%2|| abs(target) > sum)
+            return 0;
+        else
+            add/=2;
 
-        for(int i=0;i<=target;i++)
-            dp[0][i]=0;
+        vector<vector<int>> dp(len+1,vector<int>(add+1,0));
+
+        dp[0][0]=1;
 
         for(int i=1;i<=len;i++){
-            for(int j=1;j<=target;j++){
-                dp[i][j]+=(dp[i-1][j-nums[i-1]]+dp[i-1][j+nums[i-1]]);
+            for(int j=0;j<=add;j++){
+                dp[i][j] = dp[i-1][j]; // 不选
+                if(j >= nums[i-1])
+                    dp[i][j] += dp[i-1][j-nums[i-1]]; // 选
             }
         }
-        return dp[len][target];
+        return dp[len][add];
     }
 };
 // @lc code=end
