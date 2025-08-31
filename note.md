@@ -388,6 +388,12 @@ eg. vector<T> vec;reverse(vec.begin(),vec.end());
 vector<T> vec;
 accumulate(vec.begin(),vec.end(),\_val);
 
+### 二分查找函数
+
+1. 注意：lower_bound()和upper_bound()函数均是利用二分查找的方法在一个排好序的数组**（从小到大）**中进行查找
+2. lower_bound(begin,end,num)：从数组的begin位置到end-1位置二分查找第一个**大于等于num**的数字，找到则返回该数字的地址，不存在则返回end()   通过返回的地址减去其起始地址begin()，则得到该数字在数组中的下标
+3. upper_bound(begin,end,num)：从数组的begin位置到en-1位置二分查找第一个**大于num**的数字，找到则返回该数字的地址，不存在则返回end()  通过返回的地址减去其起始地址begin()，则得到该数字在数组中的下标
+
 ## 二分查找
 
 时间复杂度：O(logn)
@@ -633,6 +639,8 @@ int binarySearch(vector<int>& nums, int target) {
 
 回溯专注于枚举，而动态规划主要是求最优解以及一些重叠子问题
 
+有时候，有些计数问题有很多的重叠子问题，可以用回溯，但是如果直接回溯的话有可能会超时，所以这种情况一般选择可以解决重叠子问题的dp算法
+
 ### ==题型  [题目参考](https://leetcode.cn/discuss/post/3581838/fen-xiang-gun-ti-dan-dong-tai-gui-hua-ru-007o/)==
 
 1. 爬楼梯：最小组合问题，这里一定要注意记忆化，避免重复搜索
@@ -727,9 +735,13 @@ int binarySearch(vector<int>& nums, int target) {
 
    1. 最长公共子序列（LCS）
 
-      1. 一般定义 `f[i][j]`表示对 (*s*[:*i*],*t*[:*j*]) 的求解结果
+      1. 设 `dp[i][j]` = `s1[0..i-1]` 和 `s2[0..j-1]` 的 LCS 长度 所以此时定义vector的时候记得**容量大小要+1**
 
       2. 状态转移方程：
+   
+         1. 相等的话就+1
+         2. 不相等的话 要么跳过s[i-1]，要么跳过t[j-1]
+   
          $$
          dp[i][j] =
          \begin{cases} 
@@ -737,10 +749,23 @@ int binarySearch(vector<int>& nums, int target) {
          \max(dp[i-1][j], dp[i][j-1]) & \text{otherwise}
          \end{cases}
          $$
-         
-
-
-
+   
+      3. 注意这里的子序列是否可以不连续
+   
+         1. subarray就是要连续的，所以当此时遍历到的两者不相等时，dp值赋值为0，结果最大值在每次两者相等时更新
+         2. subsequence就是可以不连续的，就是像上面的状态转移方程即可
+   
+   2. 最长递增子序列（LIS）
+   
+      1. 动态规划O(n^2^)
+         1. `dp[i]` = 以 `nums[i]` 结尾的最长递增子序列长度
+         2. 初始化：每个位置至少能构成长度为 1 的序列：`dp[i] = 1`
+         3. 对每个 `j < i`，如果 `nums[j] < nums[i]`，则`dp[i] = max(dp[i], dp[j] + 1)`
+      2. 贪心+二分O(nlogn)
+         1. 用一个数组 `tails[k]` 表示长度为 `k+1` 的递增子序列的 **最小结尾元素**
+         2. 遍历 `nums`，对每个数用 **二分查找** 更新 `tails`：
+            - 如果当前数比 `tails` 中所有数都大，就扩展序列长度；
+            - 否则，用它更新某个位置（保证结尾尽可能小）
 
 ## 常用技巧
 
