@@ -7,7 +7,7 @@
 // @lc code=start
 class Solution {
 public:
-    int lengthOfLIS(vector<int>& nums) {
+    int lengthOfLIS_1(vector<int>& nums) {
         vector<int> dp(nums.size(),1);
 
         int maxLen=1;
@@ -22,6 +22,20 @@ public:
         }
 
         return maxLen;
+    }
+
+    int lengthOfLIS(vector<int>& nums){
+        vector<int> tail;
+
+        for(int i=0;i<nums.size();i++){
+            auto it=lower_bound(tail.begin(),tail.end(),nums[i]);
+            if(it==tail.end())
+                tail.push_back(nums[i]);
+            else
+                *it=nums[i];
+        }
+
+        return tail.size();
     }
 };
 // @lc code=end

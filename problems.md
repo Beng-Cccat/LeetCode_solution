@@ -280,3 +280,34 @@ A：如果 sum(nums) = S，target = T
 而正常大部分情况下的LCS方法，只适用于只考虑删除操作，或者删除+插入操作的近似
 
 一个扩展就是problem-712，这个题只包含删除和插入两个部分，也就是LCS方法，但是**此时的代价是ASCII值**
+
+### 673
+
+> 遇到这个问题，首先可以明确两点：
+>
+> 1. 首先，该问题是个最长递增子序列的问题
+> 2. 由于这个题目的设置存在许多重叠子问题，所以使用动态规划来进行解答
+>
+> 再继续往后思考，可以很顺企自然地想到，dp[i]表示以nums[i]结尾的最长递增子序列的个数，那么接下来会遇到一个问题，如何能知道最长递增子序列的长度，或者说该最长递增子序列的末尾最大值？
+
+这里，gpt给我提供了一种思路，即**双数组动态规划**
+
+首先，定义状态：
+
+- `length[i]`：以 `nums[i]` 结尾的 **最长递增子序列的长度**
+- `count[i]`：以 `nums[i]` 结尾的 **最长递增子序列的个数**
+
+状态转移：遍历 `i`，在前面找所有 `j < i` 且 `nums[j] < nums[i]` 的元素：
+$$
+\text{if } nums[j] < nums[i]:
+\quad
+\begin{cases}
+length[i] = length[j] + 1, \quad count[i] = count[j] & \text{if } length[j] + 1 > length[i] \\[2mm]
+length[i] = length[i], \quad count[i] = count[i] + count[j] & \text{if } length[j] + 1 = length[i] \\[2mm]
+length[i] = length[i], \quad count[i] = count[i] & \text{otherwise}
+\end{cases}
+$$
+最后：
+
+- 找出全局的最长子序列长度 `maxLen = max(len[i])`。
+- 把所有满足 `len[i] == maxLen` 的 `cnt[i]` 加起来，就是答案
