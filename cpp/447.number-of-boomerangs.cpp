@@ -21,7 +21,7 @@ public:
                 hmap[dist]++;
             }
             for(auto [d,c]:hmap){
-                res+=c*(c-1);
+                res+=c*(c-1);//有序排列（一个在左一个在右）
             }
         }
         return res;
